@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1a1a19">
+<title>Skyttelogg</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  color-scheme: light;
+  --surface-1:#fcfcfb; --page:#f9f9f7; --raised:#ffffff;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --critical:#d03b3b; --warning:#fab219;
+  --seq-100:#cde2fb; --seq-250:#86b6ef; --seq-400:#3987e5; --seq-550:#1c5cab; --seq-700:#0d366b;
+  --success-text:#006300;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --surface-1:#1a1a19; --page:#0d0d0d; --raised:#232322;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --success-text:#0ca30c;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-1:#1a1a19; --page:#0d0d0d; --raised:#232322;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --success-text:#0ca30c;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--page); color:var(--text-primary);
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;
+  padding-bottom:calc(68px + env(safe-area-inset-bottom));
+  overscroll-behavior-y:contain;
+}
+h1,h2,h3{margin:0 0 8px; line-height:1.2}
+h1{font-size:22px} h2{font-size:17px} h3{font-size:14px;color:var(--text-secondary);font-weight:600}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px}
+.hidden{display:none !important}
+.tabular{font-variant-numeric:tabular-nums}
+
+/* ---- cards ---- */
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.card.tight{padding:10px 12px}
+.row{display:flex;gap:8px;align-items:center}
+.row.between{justify-content:space-between}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1}
+.sub{color:var(--text-secondary);font-size:13px}
+.mut{color:var(--muted);font-size:12px}
+
+/* ---- inputs ---- */
+label.fld{display:block;margin-bottom:10px}
+label.fld>span{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+input,select,textarea{
+  width:100%;font:inherit;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--axis);background:var(--raised);color:var(--text-primary);
+}
+textarea{min-height:64px;resize:vertical}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+.btn{padding:11px 16px;border-radius:11px;background:var(--raised);border:1px solid var(--axis);
+  color:var(--text-primary);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--s1);border-color:var(--s1);color:#fff}
+.btn.wide{width:100%}
+.btn.sm{padding:7px 11px;font-size:13px;font-weight:600;border-radius:9px}
+.btn:disabled{opacity:.4}
+.btn.danger{color:var(--critical);border-color:var(--critical)}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:8px 13px;border-radius:999px;border:1px solid var(--axis);background:var(--raised);
+  font-size:14px;font-weight:600;color:var(--text-secondary)}
+.chip[aria-pressed="true"]{background:var(--s1);border-color:var(--s1);color:#fff}
+
+/* ---- tab bar ---- */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:var(--surface-1);border-top:1px solid var(--border);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+}
+nav.tabs button{padding:7px 2px;border-radius:10px;font-size:11px;font-weight:600;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:3px}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button.on{color:var(--s1)}
+
+/* ---- shoot screen ---- */
+.shoot-head{position:sticky;top:0;z-index:20;background:var(--page);
+  padding:8px 0 10px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.counter{display:flex;align-items:baseline;gap:10px}
+.counter .big{font-size:44px;font-weight:700;letter-spacing:-1px;line-height:1}
+.counter .of{font-size:20px;color:var(--muted);font-weight:600}
+.pillrow{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.pip{width:13px;height:13px;border-radius:4px;background:var(--grid);border:1px solid var(--border)}
+.pip.hit{background:var(--good);border-color:var(--good)}
+.pip.miss{background:var(--critical);border-color:var(--critical)}
+.pip.now{outline:2px solid var(--s1);outline-offset:2px}
+
+.now-target{text-align:center;padding:14px 8px 6px}
+.now-target .st{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.now-target .tt{font-size:34px;font-weight:700;margin-top:2px;letter-spacing:-.5px}
+.now-target .hint{font-size:13px;color:var(--text-secondary);margin-top:4px}
+
+.bigbtns{display:grid;gap:10px;margin-top:14px}
+.bigbtn{height:86px;border-radius:16px;font-size:22px;font-weight:700;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:10px;border:none}
+.bigbtn.hit{background:var(--good)}
+.bigbtn.miss{background:var(--critical)}
+.bigbtn.hit2{background:#0a7a0a;font-size:19px}
+.bigbtn:active{filter:brightness(.88)}
+
+.dirgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.dirgrid .btn{height:56px}
+.dirgrid .spacer{visibility:hidden}
+
+/* ---- stats ---- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:12px}
+.tile .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tile .val{font-size:30px;font-weight:700;letter-spacing:-1px;margin-top:2px}
+.tile .val small{font-size:15px;font-weight:600;color:var(--text-secondary);letter-spacing:0}
+.tile .dl{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.tile .dl.up{color:var(--success-text)} .tile .dl.down{color:var(--critical)}
+
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 2px;font-size:12px;color:var(--text-secondary)}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+svg.chart text{font:11px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
+svg.chart text.lbl{fill:var(--text-secondary);font-weight:600}
+svg.chart text.val{fill:var(--text-primary);font-weight:700;font-variant-numeric:tabular-nums}
+svg.chart .gridline{stroke:var(--grid);stroke-width:1}
+svg.chart .baseline{stroke:var(--axis);stroke-width:1}
+
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--raised);
+  border:1px solid var(--border);border-radius:9px;padding:7px 10px;font-size:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transition:opacity .1s;max-width:220px}
+.tip.on{opacity:1}
+.tip b{display:block;font-size:13px;margin-bottom:2px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+table.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);font-weight:700;padding:6px 6px;border-bottom:1px solid var(--border)}
+table.tbl td{padding:7px 6px;border-bottom:1px solid var(--grid)}
+table.tbl td.num,table.tbl th.num{text-align:right}
+
+details.disc{margin-top:8px}
+details.disc>summary{cursor:pointer;font-size:13px;color:var(--s1);font-weight:600;padding:4px 0}
+
+.hist-item{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--grid)}
+.hist-item:last-child{border-bottom:none}
+.hist-score{font-size:22px;font-weight:700;min-width:56px;font-variant-numeric:tabular-nums}
+.hist-meta{flex:1;min-width:0}
+.hist-meta .t{font-weight:600;font-size:14px}
+.empty{text-align:center;padding:34px 16px;color:var(--muted)}
+.empty svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;margin-bottom:8px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));
+  background:var(--text-primary);color:var(--page);padding:10px 16px;border-radius:11px;font-size:14px;
+  font-weight:600;z-index:70;opacity:0;transition:opacity .18s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<!-- ==================== HEM / NYTT PASS ==================== -->
+<section id="view-home" class="wrap">
+  <div class="row between" style="margin-bottom:12px">
+    <h1>Skyttelogg</h1>
+    <button class="btn sm" id="themeBtn" title="Ljust/mörkt">◐</button>
+  </div>
+
+  <div class="card hidden" id="activeCard">
+    <h3>Pågående pass</h3>
+    <div class="row between" style="margin-top:6px">
+      <div>
+        <div style="font-size:19px;font-weight:700" id="activeTitle">—</div>
+        <div class="sub" id="activeSub">—</div>
+      </div>
+      <button class="btn primary" id="resumeBtn">Fortsätt</button>
+    </div>
+    <div class="row" style="margin-top:10px;gap:8px">
+      <button class="btn sm grow" id="endSessionBtn">Avsluta pass</button>
+      <button class="btn sm danger" id="dropSessionBtn">Släng</button>
+    </div>
+  </div>
+
+  <div class="card" id="newCard">
+    <h2>Nytt pass</h2>
+    <label class="fld"><span>Disciplin</span></label>
+    <div class="chips" id="discChips"></div>
+
+    <div style="height:14px"></div>
+    <label class="fld"><span>Datum</span><input type="date" id="fDate"></label>
+    <label class="fld"><span>Bana / klubb</span><input id="fPlace" list="dlPlace" placeholder="t.ex. Börringe JSK" autocomplete="off"><datalist id="dlPlace"></datalist></label>
+
+    <details class="disc">
+      <summary>Utrustning och förhållanden (valfritt)</summary>
+      <div style="padding-top:10px">
+        <label class="fld"><span>Vapen</span><input id="fGun" list="dlGun" placeholder="t.ex. Blaser F3" autocomplete="off"><datalist id="dlGun"></datalist></label>
+        <label class="fld"><span>Choke</span><input id="fChoke" list="dlChoke" placeholder="t.ex. 1/2 + 3/4" autocomplete="off"><datalist id="dlChoke"></datalist></label>
+        <label class="fld"><span>Patron</span><input id="fAmmo" list="dlAmmo" placeholder="t.ex. RC4 24g #9" autocomplete="off"><datalist id="dlAmmo"></datalist></label>
+        <label class="fld"><span>Väder / ljus</span>
+          <select id="fWeather">
+            <option value="">—</option>
+            <option>Sol, stilla</option><option>Sol, blåst</option>
+            <option>Molnigt, stilla</option><option>Molnigt, blåst</option>
+            <option>Regn</option><option>Motljus</option><option>Dis / dålig sikt</option>
+          </select>
+        </label>
+        <label class="fld"><span>Typ</span>
+          <select id="fKind"><option value="traning">Träning</option><option value="tavling">Tävling</option></select>
+        </label>
+        <label class="fld"><span>Anteckning</span><textarea id="fNote" placeholder="Fokus för passet, känsla, coachning…"></textarea></label>
+      </div>
+    </details>
+
+    <button class="btn primary wide" id="startBtn" style="margin-top:6px">Starta pass</button>
+  </div>
+
+  <div class="card tight">
+    <div class="row between">
+      <div class="sub">Registrerade pass</div>
+      <div style="font-weight:700" id="homeCount">0</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== REGISTRERING ==================== -->
+<section id="view-shoot" class="wrap hidden">
+  <div class="shoot-head">
+    <div class="row between">
+      <div class="counter">
+        <span class="big tabular" id="scHit">0</span>
+        <span class="of tabular">/ <span id="scShot">0</span></span>
+        <span class="sub" id="scPct"></span>
+      </div>
+      <button class="btn sm" id="closeShoot">Klar</button>
+    </div>
+    <div class="mut" id="scMeta" style="margin-top:2px"></div>
+    <div class="pillrow" id="pips"></div>
+  </div>
+
+  <div id="stationPicker" class="card tight hidden">
+    <div class="mut" style="margin-bottom:6px">Station</div>
+    <div class="chips" id="stChips"></div>
+  </div>
+
+  <div class="now-target">
+    <div class="st" id="ntStation">—</div>
+    <div class="tt" id="ntType">—</div>
+    <div class="hint" id="ntHint"></div>
+  </div>
+
+  <div id="mainBtns" class="bigbtns"></div>
+
+  <div id="dirPanel" class="hidden">
+    <div class="mut" style="text-align:center;margin:14px 0 2px">Var gick skottet?</div>
+    <div class="dirgrid">
+      <div class="spacer"></div>
+      <button class="btn" data-dir="over">Över</button>
+      <div class="spacer"></div>
+      <button class="btn" data-dir="bakom">Bakom</button>
+      <button class="btn" data-dir="okand">Vet ej</button>
+      <button class="btn" data-dir="framfor">Framför</button>
+      <div class="spacer"></div>
+      <button class="btn" data-dir="under">Under</button>
+      <div class="spacer"></div>
+    </div>
+  </div>
+
+  <div class="row" style="gap:8px;margin-top:16px">
+    <button class="btn grow" id="undoBtn">↶ Ångra</button>
+    <button class="btn" id="extraBtn" title="Extra duva / omskott">+ Extra duva</button>
+  </div>
+
+  <div id="seriesDone" class="card hidden" style="margin-top:14px">
+    <h2 id="sdTitle">Serie klar</h2>
+    <div class="sub" id="sdSub"></div>
+    <div class="row" style="gap:8px;margin-top:12px">
+      <button class="btn primary grow" id="newSeriesBtn">Ny serie</button>
+      <button class="btn grow" id="finishBtn">Avsluta pass</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HISTORIK ==================== -->
+<section id="view-hist" class="wrap hidden">
+  <h1 style="margin-bottom:12px">Historik</h1>
+  <div class="chips" id="histFilter" style="margin-bottom:12px"></div>
+  <div id="histList"></div>
+</section>
+
+<!-- ==================== STATISTIK ==================== -->
+<section id="view-stats" class="wrap hidden">
+  <h1 style="margin-bottom:10px">Statistik</h1>
+  <div class="chips" id="statDisc" style="margin-bottom:8px"></div>
+  <div class="chips" id="statRange" style="margin-bottom:14px"></div>
+  <div id="statBody"></div>
+</section>
+
+<!-- ==================== INSTÄLLNINGAR ==================== -->
+<section id="view-set" class="wrap hidden">
+  <h1 style="margin-bottom:12px">Inställningar</h1>
+
+  <div class="card">
+    <h2>Registrering</h2>
+    <label class="fld"><span>Fråga efter missriktning vid bom</span>
+      <select id="sAskDir"><option value="1">Ja</option><option value="0">Nej</option></select></label>
+    <label class="fld"><span>Vibrera vid registrering</span>
+      <select id="sHaptic"><option value="1">Ja</option><option value="0">Nej</option></select></label>
+    <label class="fld"><span>Tema</span>
+      <select id="sTheme"><option value="auto">Följ systemet</option><option value="light">Ljust</option><option value="dark">Mörkt</option></select></label>
+  </div>
+
+  <div class="card">
+    <h2>Säkerhetskopia</h2>
+    <p class="sub">All data ligger bara i den här telefonen. Exportera regelbundet.</p>
+    <div class="row" style="gap:8px;margin-top:8px">
+      <button class="btn grow" id="expJson">Exportera JSON</button>
+      <button class="btn grow" id="expCsv">Exportera CSV</button>
+    </div>
+    <div style="margin-top:8px">
+      <label class="btn wide" style="cursor:pointer">Importera JSON
+        <input type="file" id="impFile" accept=".json" class="hidden"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Serieuppställning</h2>
+    <p class="sub">Skjutordningen per disciplin. Kontrollera mot ditt reglemente — den kan ändras här och gäller nya serier.</p>
+    <div id="seqEditor"></div>
+  </div>
+
+  <div class="card">
+    <h2>Om</h2>
+    <p class="sub">Skyttelogg — offlinelogg för lerduveskytte. Fungerar utan täckning; ingen data lämnar telefonen.</p>
+    <button class="btn danger wide" id="wipeBtn" style="margin-top:8px">Radera all data</button>
+  </div>
+</section>
+
+<nav class="tabs">
+  <button data-view="home" class="on"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3z"/></svg>Pass</button>
+  <button data-view="hist"><svg viewBox="0 0 24 24"><path d="M12 8v5l4 2"/><circle cx="12" cy="12" r="9"/></svg>Historik</button>
+  <button data-view="stats"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</button>
+  <button data-view="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>Mer</button>
+</nav>
+
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+/* ============================================================
+   Skyttelogg — offline logg för lerduveskytte
+   Data: localStorage, nyckel "skyttelogg.v1"
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const KEY = "skyttelogg.v1";
+
+/* ---------- Discipliner ------------------------------------
+   En serie är en lista "plattor". Varje platta:
+     st   = station (nummer, eller null = välj i appen)
+     t    = plattyp: 'hog' | 'lag' | 'torn' | 'trap'
+     pair = dubbelnummer (samma pair = skjuts som dubbel)
+     ord  = 1 eller 2 (vilket skott i dubbeln)
+   ---------------------------------------------------------- */
+const T = {hog:"Hög", lag:"Låg", torn:"Högtorn", trap:"Trap"};
+
+function skeetTargets(){
+  const a=[];
+  const push=(st,t,pair,ord)=>a.push({st,t,pair:pair||null,ord:ord||null});
+  // Station 1 & 2: enkel hög, enkel låg, dubbel (hög -> låg)
+  [1,2].forEach((st,i)=>{ push(st,"hog"); push(st,"lag");
+    push(st,"hog",10+i,1); push(st,"lag",10+i,2); });
+  // Station 3, 4, 5: enkel hög + enkel låg
+  [3,4,5].forEach(st=>{ push(st,"hog"); push(st,"lag"); });
+  // Station 6 & 7: enkel hög, enkel låg, dubbel (låg -> hög)
+  [6,7].forEach((st,i)=>{ push(st,"hog"); push(st,"lag");
+    push(st,"lag",20+i,1); push(st,"hog",20+i,2); });
+  // Station 8: enkel hög + enkel låg
+  push(8,"hog"); push(8,"lag");
+  // 25:e duvan
+  push(8,"hog");
+  return a;
+}
+function trapTargets(){
+  const a=[];
+  for(let st=1;st<=5;st++) for(let i=0;i<5;i++) a.push({st,t:"trap",pair:null,ord:null});
+  return a;
+}
+function hogFasanTargets(){
+  const a=[];
+  for(let i=0;i<25;i++) a.push({st:null,t:"torn",pair:null,ord:null});
+  return a;
+}
+
+const DISCIPLINES = {
+  "nordisk-skeet":{name:"Nordisk skeet", short:"Skeet", field:"skeet", perTarget:1,
+    stations:[1,2,3,4,5,6,7,8], build:skeetTargets,
+    note:"8 stationer, 25 duvor. Dubbel på station 1, 2, 6 och 7."},
+  "hog-fasan":{name:"Hög fasan", short:"Hög fasan", field:"skeet", perTarget:1,
+    stations:[1,2,3,4,5,6,7,8,"Mitt","Bakom"], pickStation:true, build:hogFasanTargets,
+    note:"Enkelduvor från högtornet. Välj station löpande under serien."},
+  "trap":{name:"Trap", short:"Trap", field:"trap", perTarget:2,
+    stations:[1,2,3,4,5], build:trapTargets,
+    note:"5 stationer × 5 duvor. Två skott per duva."}
+};
+const DIRS = {bakom:"Bakom", framfor:"Framför", over:"Över", under:"Under", okand:"Vet ej"};
+
+/* ---------- Lagring ---------------------------------------- */
+const DEFAULTS = {
+  sessions: [],          // avslutade pass
+  active: null,          // pågående pass
+  settings: {askDir:1, haptic:1, theme:"auto"},
+  seq: {}                // ev. användarändrad skjutordning per disciplin
+};
+let DB = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredClone(DEFAULTS);
+    const d = JSON.parse(raw);
+    return Object.assign(structuredClone(DEFAULTS), d,
+      {settings:Object.assign({}, DEFAULTS.settings, d.settings||{})});
+  }catch(e){ console.warn("load fail",e); return structuredClone(DEFAULTS); }
+}
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem(KEY, JSON.stringify(DB)); }
+    catch(e){ toast("Kunde inte spara — minnet fullt?"); }
+  }, 60);
+}
+function saveNow(){ clearTimeout(saveTimer); try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){} }
+
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ---------- Hjälpare --------------------------------------- */
+function targetsFor(discId){
+  const custom = DB.seq[discId];
+  if(custom && custom.length) return structuredClone(custom);
+  return DISCIPLINES[discId].build();
+}
+function labelTarget(t){
+  if(t.t==="trap") return "Duva";
+  let s = T[t.t]||t.t;
+  if(t.pair) s = "Dubbel " + s.toLowerCase() + " (" + t.ord + ":a)";
+  return s;
+}
+function typeKey(t){
+  if(t.t==="trap") return "trap";
+  if(t.pair) return "dubbel-"+t.ord;
+  return t.t;
+}
+function typeLabel(k){
+  return {hog:"Enkel hög", lag:"Enkel låg", torn:"Högtorn",
+    "dubbel-1":"Dubbel 1:a skottet", "dubbel-2":"Dubbel 2:a skottet", trap:"Trap-duva"}[k]||k;
+}
+const pct = (h,n) => n? Math.round(h/n*100) : 0;
+function fmtDate(iso){
+  const d=new Date(iso+"T12:00:00");
+  return d.toLocaleDateString("sv-SE",{day:"numeric",month:"short",year:"numeric"});
+}
+function toast(msg){
+  const el=$("#toast"); el.textContent=msg; el.classList.add("on");
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("on"),1800);
+}
+function buzz(ms){ if(DB.settings.haptic && navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} }
+
+/* Alla serier i alla pass (inkl. pågående) som flat lista */
+function allSeries(filter){
+  const out=[];
+  const push=(s,ser)=>{ if(!ser.shots || !ser.shots.length) return;
+    if(filter && filter.disc && filter.disc!=="alla" && s.disc!==filter.disc) return;
+    if(filter && filter.from && s.date < filter.from) return;
+    out.push({session:s, series:ser}); };
+  DB.sessions.forEach(s => (s.series||[]).forEach(ser=>push(s,ser)));
+  if(DB.active) (DB.active.series||[]).forEach(ser=>push(DB.active,ser));
+  return out.sort((a,b)=> (a.session.date+a.series.id) < (b.session.date+b.series.id) ? -1 : 1);
+}
+function allShots(filter){
+  const out=[];
+  allSeries(filter).forEach(({session,series})=>
+    series.shots.forEach(sh => out.push({...sh, _s:session, _ser:series})));
+  return out;
+}
+</script>
+<script>
+/* ============================================================
+   Navigation + tema
+   ============================================================ */
+let VIEW="home";
+function go(v){
+  VIEW=v;
+  ["home","shoot","hist","stats","set"].forEach(x=>
+    $("#view-"+x).classList.toggle("hidden", x!==v));
+  $$("nav.tabs button").forEach(b=>b.classList.toggle("on", b.dataset.view===v));
+  window.scrollTo(0,0);
+  if(v==="hist") renderHist();
+  if(v==="stats") renderStats();
+  if(v==="set") renderSettings();
+  if(v==="home") renderHome();
+}
+$$("nav.tabs button").forEach(b=>b.onclick=()=>{
+  if(b.dataset.view==="home" && DB.active) { renderHome(); go("home"); }
+  else go(b.dataset.view);
+});
+
+function applyTheme(){
+  const t=DB.settings.theme;
+  if(t==="auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme",t);
+}
+$("#themeBtn").onclick=()=>{
+  const order=["auto","light","dark"];
+  DB.settings.theme = order[(order.indexOf(DB.settings.theme)+1)%3];
+  applyTheme(); save(); toast("Tema: "+{auto:"följer systemet",light:"ljust",dark:"mörkt"}[DB.settings.theme]);
+  if(VIEW==="stats") renderStats();
+};
+applyTheme();
+
+/* ============================================================
+   HEM / NYTT PASS
+   ============================================================ */
+let newDisc = "nordisk-skeet";
+
+function renderHome(){
+  // disciplinval
+  const dc=$("#discChips"); dc.innerHTML="";
+  Object.entries(DISCIPLINES).forEach(([id,d])=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=d.name;
+    b.setAttribute("aria-pressed", id===newDisc);
+    b.onclick=()=>{ newDisc=id; renderHome(); };
+    dc.appendChild(b);
+  });
+  if(!$("#fDate").value) $("#fDate").value = new Date().toISOString().slice(0,10);
+
+  // datalists från historik
+  const fill=(sel,key)=>{
+    const set=[...new Set(DB.sessions.map(s=>s[key]).filter(Boolean))].slice(0,20);
+    $(sel).innerHTML = set.map(v=>`<option value="${esc(v)}">`).join("");
+  };
+  fill("#dlPlace","place"); fill("#dlGun","gun"); fill("#dlChoke","choke"); fill("#dlAmmo","ammo");
+
+  // pågående pass
+  const a=DB.active;
+  $("#activeCard").classList.toggle("hidden", !a);
+  $("#newCard").classList.toggle("hidden", !!a);
+  if(a){
+    const st=sessionStats(a);
+    $("#activeTitle").textContent = DISCIPLINES[a.disc].name;
+    $("#activeSub").textContent =
+      `${fmtDate(a.date)}${a.place?" · "+a.place:""} · ${a.series.length} serie${a.series.length===1?"":"r"} · ${st.hits}/${st.shots} (${st.pct}%)`;
+  }
+  $("#homeCount").textContent = DB.sessions.length;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+$("#startBtn").onclick=()=>{
+  DB.active = {
+    id:uid(), date:$("#fDate").value || new Date().toISOString().slice(0,10),
+    disc:newDisc, place:$("#fPlace").value.trim(), gun:$("#fGun").value.trim(),
+    choke:$("#fChoke").value.trim(), ammo:$("#fAmmo").value.trim(),
+    weather:$("#fWeather").value, kind:$("#fKind").value, note:$("#fNote").value.trim(),
+    series:[]
+  };
+  newSeries(); saveNow(); openShoot();
+};
+$("#resumeBtn").onclick=()=>{
+  const a=DB.active;
+  const last=a.series[a.series.length-1];
+  if(!last || last.shots.length>=last.planned.length) { /* visa klar-läge */ }
+  openShoot();
+};
+$("#endSessionBtn").onclick=()=>finishSession();
+$("#dropSessionBtn").onclick=()=>{
+  if(!confirm("Släng det pågående passet? Registrerade skott försvinner.")) return;
+  DB.active=null; saveNow(); renderHome();
+};
+
+function finishSession(){
+  const a=DB.active; if(!a) return;
+  a.series = a.series.filter(s=>s.shots.length>0);
+  if(a.series.length){ DB.sessions.unshift(a); }
+  DB.active=null; saveNow();
+  toast(a.series.length? "Pass sparat" : "Tomt pass slängt");
+  renderHome(); go("home");
+}
+
+/* ============================================================
+   REGISTRERING
+   ============================================================ */
+let pendingMiss=null;   // väntar på missriktning
+
+function newSeries(){
+  const a=DB.active;
+  const s={id:uid(), planned:targetsFor(a.disc), shots:[], curSt:null};
+  const d=DISCIPLINES[a.disc];
+  if(d.pickStation) s.curSt = d.stations[0];
+  a.series.push(s); save();
+  return s;
+}
+function curSeries(){ const a=DB.active; return a? a.series[a.series.length-1] : null; }
+
+function openShoot(){ pendingMiss=null; renderShoot(); go("shoot"); }
+$("#closeShoot").onclick=()=>{ saveNow(); renderHome(); go("home"); };
+
+function nextTarget(ser){
+  const i=ser.shots.length;
+  return i<ser.planned.length ? Object.assign({}, ser.planned[i], {_i:i}) : null;
+}
+function sessionStats(s){
+  let hits=0,shots=0;
+  (s.series||[]).forEach(ser=>ser.shots.forEach(sh=>{shots++; if(sh.res==="hit")hits++;}));
+  return {hits,shots,pct:pct(hits,shots)};
+}
+function seriesStats(ser){
+  let h=0; ser.shots.forEach(sh=>{if(sh.res==="hit")h++;});
+  return {hits:h, shots:ser.shots.length, pct:pct(h,ser.shots.length)};
+}
+
+function renderShoot(){
+  const a=DB.active; if(!a){ go("home"); return; }
+  const d=DISCIPLINES[a.disc];
+  const ser=curSeries();
+  const ss=seriesStats(ser);
+
+  $("#scHit").textContent=ss.hits;
+  $("#scShot").textContent=ss.shots;
+  $("#scPct").textContent = ss.shots? ss.pct+"%" : "";
+  const tot=sessionStats(a);
+  $("#scMeta").textContent =
+    `${d.name} · serie ${a.series.length}${a.series.length>1?`  ·  passet: ${tot.hits}/${tot.shots}`:""}`;
+
+  // pips
+  const pips=$("#pips"); pips.innerHTML="";
+  ser.planned.forEach((t,i)=>{
+    const p=document.createElement("div"); p.className="pip";
+    const sh=ser.shots[i];
+    if(sh) p.classList.add(sh.res==="hit"?"hit":"miss");
+    if(i===ser.shots.length) p.classList.add("now");
+    if(t.extra) p.style.borderRadius="999px";
+    pips.appendChild(p);
+  });
+
+  // stationsväljare (hög fasan)
+  $("#stationPicker").classList.toggle("hidden", !d.pickStation);
+  if(d.pickStation){
+    const c=$("#stChips"); c.innerHTML="";
+    d.stations.forEach(st=>{
+      const b=document.createElement("button"); b.className="chip";
+      b.textContent = typeof st==="number" ? "St "+st : st;
+      b.setAttribute("aria-pressed", String(ser.curSt)===String(st));
+      b.onclick=()=>{ ser.curSt=st; save(); renderShoot(); };
+      c.appendChild(b);
+    });
+  }
+
+  const nt=nextTarget(ser);
+  const done = !nt;
+
+  $("#seriesDone").classList.toggle("hidden", !done);
+  $("#mainBtns").classList.toggle("hidden", done || !!pendingMiss);
+  $("#dirPanel").classList.toggle("hidden", !pendingMiss);
+  $("#extraBtn").disabled = false;
+  $("#undoBtn").disabled = ser.shots.length===0;
+
+  if(done){
+    $("#ntStation").textContent="Serie klar";
+    $("#ntType").textContent = ss.hits+" / "+ss.shots;
+    $("#ntHint").textContent = ss.pct+"%";
+    $("#sdTitle").textContent = `Serie ${a.series.length}: ${ss.hits} / ${ss.shots}`;
+    $("#sdSub").textContent = `Passet totalt: ${tot.hits} / ${tot.shots} (${tot.pct}%)`;
+    return;
+  }
+
+  const st = d.pickStation ? ser.curSt : nt.st;
+  $("#ntStation").textContent = (st==null? "" : (typeof st==="number"? "Station "+st : st))
+    + (nt.extra? "  ·  extra duva" : "");
+  $("#ntType").textContent = labelTarget(nt);
+  $("#ntHint").textContent = pendingMiss ? "" :
+    (nt.pair ? "Dubbel — skott "+nt.ord+" av 2" : (d.perTarget===2 ? "Två skott tillåtna" : ""));
+
+  // knappar
+  const mb=$("#mainBtns"); mb.innerHTML="";
+  const mk=(cls,label,fn)=>{ const b=document.createElement("button");
+    b.className="bigbtn "+cls; b.textContent=label; b.onclick=fn; mb.appendChild(b); };
+  if(d.perTarget===2){
+    mk("hit","Träff — 1:a skottet",()=>register("hit",1));
+    mk("hit2","Träff — 2:a skottet",()=>register("hit",2));
+    mk("miss","Bom",()=>register("miss",null));
+  }else{
+    mk("hit","Träff",()=>register("hit",1));
+    mk("miss","Bom",()=>register("miss",1));
+  }
+}
+
+function register(res, shotNo){
+  const a=DB.active, d=DISCIPLINES[a.disc], ser=curSeries();
+  const nt=nextTarget(ser); if(!nt) return;
+  const st = d.pickStation ? ser.curSt : nt.st;
+  const shot={
+    st, t:nt.t, pair:nt.pair, ord:nt.ord, extra:!!nt.extra,
+    res, shotNo: shotNo||null, dir:null, ts:Date.now()
+  };
+  ser.shots.push(shot);
+  buzz(res==="hit"?18:[14,50,14]);
+  if(res==="miss" && Number(DB.settings.askDir)===1){ pendingMiss=shot; }
+  save(); renderShoot();
+}
+$$("#dirPanel [data-dir]").forEach(b=>b.onclick=()=>{
+  if(pendingMiss) pendingMiss.dir=b.dataset.dir;
+  pendingMiss=null; save(); renderShoot();
+});
+$("#undoBtn").onclick=()=>{
+  const ser=curSeries(); if(!ser||!ser.shots.length) return;
+  pendingMiss=null;
+  const removed=ser.shots.pop();
+  // ta bort ev. inskjuten extraduva som inte längre är skjuten
+  if(ser.planned.length>ser.shots.length){
+    const t=ser.planned[ser.shots.length];
+    if(t && t.extra && !removed.extra) ser.planned.splice(ser.shots.length,1);
+  }
+  buzz(10); save(); renderShoot();
+};
+$("#extraBtn").onclick=()=>{
+  const ser=curSeries(); if(!ser) return;
+  const i=ser.shots.length;
+  const base = ser.planned[i] || ser.planned[i-1] || ser.planned[ser.planned.length-1];
+  ser.planned.splice(i,0, Object.assign({}, base, {extra:true}));
+  save(); renderShoot(); toast("Extra duva tillagd");
+};
+$("#newSeriesBtn").onclick=()=>{ newSeries(); pendingMiss=null; renderShoot(); window.scrollTo(0,0); };
+$("#finishBtn").onclick=()=>finishSession();
+
+/* ============================================================
+   HISTORIK
+   ============================================================ */
+let histDisc="alla";
+function renderHist(){
+  const hf=$("#histFilter"); hf.innerHTML="";
+  [["alla","Alla"],...Object.entries(DISCIPLINES).map(([id,d])=>[id,d.short])].forEach(([id,lab])=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=lab;
+    b.setAttribute("aria-pressed", id===histDisc);
+    b.onclick=()=>{histDisc=id; renderHist();}; hf.appendChild(b);
+  });
+
+  const list=$("#histList");
+  const sessions=[...(DB.active?[DB.active]:[]), ...DB.sessions]
+    .filter(s=>histDisc==="alla"||s.disc===histDisc);
+  if(!sessions.length){
+    list.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l4 2"/></svg>
+      <div>Inga pass registrerade än.</div></div>`; return;
+  }
+  list.innerHTML="";
+  sessions.forEach(s=>{
+    const st=sessionStats(s), d=DISCIPLINES[s.disc];
+    const card=document.createElement("div"); card.className="card";
+    const meta=[fmtDate(s.date), s.place, s.gun, s.ammo, s.weather,
+      s.kind==="tavling"?"Tävling":null].filter(Boolean).join(" · ");
+    card.innerHTML=`
+      <div class="hist-item" style="border:none;padding-top:0">
+        <div class="hist-score">${st.hits}<span style="font-size:14px;color:var(--muted)">/${st.shots}</span></div>
+        <div class="hist-meta">
+          <div class="t">${esc(d.name)}${s===DB.active?' <span style="color:var(--s1)">· pågår</span>':''}</div>
+          <div class="mut">${esc(meta)}</div>
+        </div>
+        <div style="font-size:19px;font-weight:700" class="tabular">${st.pct}%</div>
+      </div>
+      <div class="mut" style="margin-top:2px">${
+        s.series.map((ser,i)=>{const q=seriesStats(ser);return `S${i+1}: ${q.hits}/${q.shots}`;}).join("   ")}</div>
+      ${s.note?`<div class="sub" style="margin-top:8px;font-style:italic">${esc(s.note)}</div>`:""}
+      <details class="disc"><summary>Visa plattor</summary><div class="detail"></div></details>`;
+    const holder=card.querySelector(".detail");
+    holder.appendChild(stationBreakdownTable(s));
+    if(s!==DB.active){
+      const del=document.createElement("button");
+      del.className="btn sm danger"; del.textContent="Radera pass";
+      del.style.marginTop="10px";
+      del.onclick=()=>{ if(!confirm("Radera passet?"))return;
+        DB.sessions=DB.sessions.filter(x=>x.id!==s.id); saveNow(); renderHist(); };
+      card.appendChild(del);
+    }
+    list.appendChild(card);
+  });
+}
+function stationBreakdownTable(s){
+  const rows={};
+  (s.series||[]).forEach(ser=>ser.shots.forEach(sh=>{
+    const k=(sh.st==null?"—":sh.st)+"|"+typeKey(sh);
+    rows[k]=rows[k]||{st:sh.st,tk:typeKey(sh),h:0,n:0};
+    rows[k].n++; if(sh.res==="hit")rows[k].h++;
+  }));
+  const t=document.createElement("table"); t.className="tbl";
+  t.innerHTML=`<thead><tr><th>Station</th><th>Platta</th><th class="num">Träff</th><th class="num">%</th></tr></thead>`;
+  const tb=document.createElement("tbody");
+  Object.values(rows).sort((a,b)=>(a.st??99)-(b.st??99)||a.tk.localeCompare(b.tk)).forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${typeof r.st==="number"?r.st:esc(String(r.st??"—"))}</td>
+      <td>${esc(typeLabel(r.tk))}</td><td class="num">${r.h}/${r.n}</td><td class="num">${pct(r.h,r.n)}%</td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); return t;
+}
+</script>
+<script>
+/* ============================================================
+   STATISTIK
+   ============================================================ */
+let statDisc="alla", statRange="alla";
+const RANGES={alla:["Allt",null], d90:["90 dagar",90], d30:["30 dagar",30]};
+
+function filterObj(){
+  const f={disc:statDisc};
+  const days=RANGES[statRange][1];
+  if(days){ const d=new Date(); d.setDate(d.getDate()-days); f.from=d.toISOString().slice(0,10); }
+  return f;
+}
+function chipRow(el, items, current, onPick){
+  el.innerHTML="";
+  items.forEach(([id,lab])=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=lab;
+    b.setAttribute("aria-pressed", id===current);
+    b.onclick=()=>onPick(id); el.appendChild(b);
+  });
+}
+
+function renderStats(){
+  chipRow($("#statDisc"), [["alla","Alla"],...Object.entries(DISCIPLINES).map(([i,d])=>[i,d.short])],
+    statDisc, id=>{statDisc=id; renderStats();});
+  chipRow($("#statRange"), Object.entries(RANGES).map(([i,v])=>[i,v[0]]),
+    statRange, id=>{statRange=id; renderStats();});
+
+  const f=filterObj();
+  const series=allSeries(f), shots=allShots(f);
+  const body=$("#statBody"); body.innerHTML="";
+
+  if(!shots.length){
+    body.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+      <div>Ingen data för det här urvalet.</div></div>`; return;
+  }
+
+  /* ---- Nyckeltal ---- */
+  const hits=shots.filter(s=>s.res==="hit").length;
+  const allScores=series.map(({session,series:ser})=>({
+    date:session.date, disc:session.disc, planned:ser.planned.length,
+    complete: ser.shots.length>=ser.planned.length, ...seriesStats(ser)}));
+  // Avbrutna serier skulle dra ner snitt/bästa — de räknas inte som fullföljda serier
+  const serieScores = allScores.filter(s=>s.complete).length>=2
+    ? allScores.filter(s=>s.complete) : allScores;
+  const partials = allScores.length - serieScores.length;
+  const best=serieScores.reduce((a,b)=>b.pct>a.pct?b:a, serieScores[0]);
+  const avg=Math.round(serieScores.reduce((a,b)=>a+b.hits,0)/serieScores.length*10)/10;
+  // längsta träffsvit
+  let streak=0,cur=0;
+  series.forEach(({series:ser})=>ser.shots.forEach(sh=>{
+    if(sh.res==="hit"){cur++; if(cur>streak)streak=cur;} else cur=0; }));
+  // trend: senaste 5 serier vs de 5 innan
+  const last5=serieScores.slice(-5), prev5=serieScores.slice(-10,-5);
+  const avgPct=a=>a.length? Math.round(a.reduce((x,y)=>x+y.pct,0)/a.length):null;
+  const l5=avgPct(last5), p5=avgPct(prev5);
+  const delta = (l5!=null&&p5!=null)? l5-p5 : null;
+
+  body.appendChild(html(`
+    <div class="tiles">
+      <div class="tile"><div class="lab">Träffprocent</div>
+        <div class="val tabular">${pct(hits,shots.length)}<small>%</small></div>
+        <div class="dl">${hits} av ${shots.length} plattor</div></div>
+      <div class="tile"><div class="lab">Snitt per serie</div>
+        <div class="val tabular">${avg}</div>
+        <div class="dl ${delta==null?"":delta>0?"up":delta<0?"down":""}">${
+          delta==null? serieScores.length+" serier" :
+          (delta>0?"▲ +":delta<0?"▼ ":"")+ (delta===0?"oförändrat":Math.abs(delta)+" %-enh mot förra 5")}</div></div>
+      <div class="tile"><div class="lab">Bästa serie</div>
+        <div class="val tabular">${best.hits}<small>/${best.shots}</small></div>
+        <div class="dl">${fmtDate(best.date)}</div></div>
+      <div class="tile"><div class="lab">Längsta träffsvit</div>
+        <div class="val tabular">${streak}</div>
+        <div class="dl">plattor i rad</div></div>
+    </div>`));
+
+  /* ---- Station ---- */
+  const byStation={};
+  shots.forEach(s=>{ const k=s.st==null?"—":String(s.st);
+    byStation[k]=byStation[k]||{h:0,n:0}; byStation[k].n++; if(s.res==="hit")byStation[k].h++; });
+  const stKeys=Object.keys(byStation);
+  if(stKeys.length>1 || stKeys[0]!=="—"){
+    const card=html(`<div class="card"><h2>Träffprocent per station</h2>
+      <p class="sub" style="margin:0 0 8px">Färgskalan går från din svagaste till din bästa
+      station — se skalan under banan. Grått = för få plattor (&lt;5). H = högtorn, L = lågtorn.</p></div>`);
+    const showField = (statDisc==="nordisk-skeet" || statDisc==="hog-fasan"
+      || (statDisc==="alla" && stKeys.some(k=>+k>5)));
+    if(showField){
+      card.appendChild(skeetFieldChart(byStation));
+      const rest=otherStationBars(byStation, k=>!isNaN(+k) && +k>=1 && +k<=8);
+      if(rest) card.appendChild(rest);
+    }else{
+      card.appendChild(stationBars(byStation));
+    }
+    card.appendChild(html(`<details class="disc"><summary>Visa som tabell</summary></details>`));
+    card.querySelector("details").appendChild(simpleTable(
+      ["Station","Träff","Plattor","%"],
+      Object.entries(byStation).sort((a,b)=>(+a[0]||99)-(+b[0]||99))
+        .map(([k,v])=>[k, v.h, v.n, pct(v.h,v.n)+"%"])));
+    body.appendChild(card);
+  }
+
+  /* ---- Plattyp ---- */
+  const byType={};
+  shots.forEach(s=>{ const k=typeKey(s);
+    byType[k]=byType[k]||{h:0,n:0}; byType[k].n++; if(s.res==="hit")byType[k].h++; });
+  const typeOrder=["hog","lag","dubbel-1","dubbel-2","torn","trap"];
+  const tEntries=typeOrder.filter(k=>byType[k]).map(k=>[typeLabel(k),byType[k]]);
+  if(tEntries.length>1){
+    const card=html(`<div class="card"><h2>Träffprocent per plattyp</h2></div>`);
+    card.appendChild(hBars(tEntries));
+    body.appendChild(card);
+  }
+
+  /* ---- Trend ---- */
+  if(serieScores.length>=3){
+    const card=html(`<div class="card"><h2>Serieresultat över tid</h2>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Serie</span>
+      <span><i style="background:var(--s2)"></i>Rullande snitt (5)</span></div>
+      ${partials?`<p class="mut" style="margin:2px 0 0">${partials} avbruten serie${partials===1?"":"r"} räknas inte in.</p>`:""}</div>`);
+    card.appendChild(trendChart(serieScores));
+    body.appendChild(card);
+  }
+
+  /* ---- Missriktning ---- */
+  const misses=shots.filter(s=>s.res==="miss" && s.dir);
+  if(misses.length>=3){
+    const byDir={};
+    misses.forEach(s=>{byDir[s.dir]=(byDir[s.dir]||0)+1;});
+    const ents=Object.keys(DIRS).filter(k=>byDir[k]).map(k=>[DIRS[k],{h:byDir[k],n:misses.length}]);
+    const card=html(`<div class="card"><h2>Var bommarna går</h2>
+      <p class="sub" style="margin:0 0 8px">Andel av ${misses.length} registrerade bommar.</p></div>`);
+    card.appendChild(hBars(ents,{unit:" bommar"}));
+    body.appendChild(card);
+  }
+
+  /* ---- Utrustning ---- */
+  ["gun","ammo","choke","place","weather"].forEach(key=>{
+    const lab={gun:"vapen",ammo:"patron",choke:"choke",place:"bana",weather:"väder"}[key];
+    const g={};
+    shots.forEach(s=>{ const v=s._s[key]; if(!v)return;
+      g[v]=g[v]||{h:0,n:0}; g[v].n++; if(s.res==="hit")g[v].h++; });
+    const ents=Object.entries(g).filter(([,v])=>v.n>=10);
+    if(ents.length>=2){
+      const card=html(`<div class="card"><h2>Jämförelse per ${lab}</h2></div>`);
+      card.appendChild(hBars(ents.sort((a,b)=>pct(b[1].h,b[1].n)-pct(a[1].h,a[1].n))));
+      body.appendChild(card);
+    }
+  });
+}
+
+function html(s){ const t=document.createElement("div"); t.innerHTML=s.trim(); return t.firstElementChild; }
+function simpleTable(head, rows){
+  const t=document.createElement("table"); t.className="tbl";
+  t.innerHTML="<thead><tr>"+head.map((h,i)=>`<th class="${i?"num":""}">${h}</th>`).join("")+"</tr></thead>";
+  const tb=document.createElement("tbody");
+  rows.forEach(r=>{ const tr=document.createElement("tr");
+    tr.innerHTML=r.map((c,i)=>`<td class="${i?"num":""}">${esc(c)}</td>`).join(""); tb.appendChild(tr); });
+  t.appendChild(tb); return t;
+}
+
+/* ---------- tooltip ---------- */
+const TIP=$("#tip");
+function bindTip(el, title, lines){
+  const show=e=>{
+    TIP.innerHTML=`<b>${esc(title)}</b>${lines.map(l=>esc(l)).join("<br>")}`;
+    TIP.classList.add("on");
+    const p = e.touches? e.touches[0] : e;
+    const r=TIP.getBoundingClientRect();
+    let x=p.clientX-r.width/2, y=p.clientY-r.height-14;
+    x=Math.max(8,Math.min(x,innerWidth-r.width-8)); if(y<8) y=p.clientY+18;
+    TIP.style.left=x+"px"; TIP.style.top=y+"px";
+  };
+  const hide=()=>TIP.classList.remove("on");
+  el.addEventListener("pointerenter",show); el.addEventListener("pointermove",show);
+  el.addEventListener("pointerleave",hide);
+  el.addEventListener("pointerdown",e=>{show(e); clearTimeout(el._h); el._h=setTimeout(hide,2200);});
+}
+
+/* ---------- sekventiell ramp (en nyans, validerad mot båda underlagen) ---------- */
+const SEQ_LIGHT=["#86b6ef","#3987e5","#256abf","#184f95","#0d366b"];
+const SEQ_DARK =["#184f95","#256abf","#3987e5","#6da7ec","#9ec5f4"];
+function isDark(){
+  const t=document.documentElement.getAttribute("data-theme");
+  if(t) return t==="dark";
+  return matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function seqIdx(p){ const S=isDark()?SEQ_DARK:SEQ_LIGHT;
+  return Math.min(S.length-1, Math.max(0, Math.round((p/100)*(S.length-1)))); }
+function seqColor(p){ return (isDark()?SEQ_DARK:SEQ_LIGHT)[seqIdx(p)]; }
+/* Etikettfärg efter fältets faktiska luminans — funkar för båda ramperna */
+function lum(hex){
+  const v=[1,3,5].map(i=>{const c=parseInt(hex.substr(i,2),16)/255;
+    return c<=0.03928? c/12.92 : Math.pow((c+0.055)/1.055,2.4);});
+  return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2];
+}
+function seqInk(p){                       // väljer den etikettfärg som ger bäst kontrast
+  const L=lum(seqColor(p));
+  const white=(1.05)/(L+0.05), black=(L+0.05)/(0.0027+0.05);
+  return white>black ? "#ffffff" : "#0b0b0b";
+}
+
+/* ---------- skeetbana som heatmap ----------
+   Skalan spänns över det egna intervallet (min→max bland stationerna) —
+   annars hamnar allt mellan 60 och 100 % i samma nyans.               */
+function skeetFieldChart(byStation){
+  const W=380,H=252, cx=W/2, cy=170, R=110;
+  const svg=svgEl(W,H);
+
+  const num = Object.entries(byStation).filter(([k])=>!isNaN(+k) && +k>=1 && +k<=8);
+  const solid = num.filter(([,v])=>v.n>=5).map(([,v])=>pct(v.h,v.n));
+  let lo = solid.length? Math.min(...solid) : 0, hi = solid.length? Math.max(...solid) : 100;
+  if(hi-lo < 12){ const mid=(hi+lo)/2; lo=Math.max(0,mid-6); hi=Math.min(100,mid+6); }
+  const norm = q => Math.max(0, Math.min(100, (q-lo)/(hi-lo)*100));
+
+  // banan
+  add(svg,"path",{d:`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`,
+    fill:"none",stroke:"var(--grid)","stroke-width":"1.5"});
+  add(svg,"line",{x1:cx-R-34,y1:cy,x2:cx+R+34,y2:cy,stroke:"var(--grid)","stroke-width":"1.5"});
+  // tornen: H = högtorn (hög utkastare), L = lågtorn
+  [[-1,"H",30],[1,"L",14]].forEach(([sign,letter,h])=>{
+    const x=cx+sign*(R+22);
+    add(svg,"rect",{x:x-9,y:cy-h,width:18,height:h,rx:2,fill:"var(--grid)"});
+    txt(svg,x,cy-h/2+4,letter,{"text-anchor":"middle","font-size":"10","font-weight":"700",
+      fill:"var(--text-secondary)"});
+  });
+
+  const pos={}, ang={};
+  for(let i=1;i<=7;i++){
+    const a=Math.PI - (i-1)/6*Math.PI;
+    ang[i]=a; pos[i]=[cx+R*Math.cos(a), cy-R*Math.sin(a)];
+  }
+  pos[8]=[cx,cy]; ang[8]=-Math.PI/2;
+
+  num.sort((a,b)=>+a[0]-+b[0]).forEach(([k,v])=>{
+    const p=pos[+k], a=ang[+k];
+    const q=pct(v.h,v.n), thin=v.n<5;
+    const g=add(svg,"g",{});
+    add(g,"circle",{cx:p[0],cy:p[1],r:20,fill:"var(--surface-1)"});      // 2px underlagsgap
+    add(g,"circle",{cx:p[0],cy:p[1],r:18,fill:thin?"var(--grid)":seqColor(norm(q)),
+      stroke:"var(--border)","stroke-width":"1"});
+    txt(g,p[0],p[1]+4,thin?"·":q+"%",{"text-anchor":"middle","font-size":"11.5",
+      "font-weight":"700",fill:thin?"var(--muted)":seqInk(norm(q))});
+    // stationsetikett radiellt utåt så den aldrig krockar med bågen
+    const dx=Math.cos(a), dy=-Math.sin(a), L=29;
+    const lx=p[0]+dx*L, ly=p[1]+dy*L+4;
+    txt(g,lx,ly,String(k),{"font-size":"10.5","font-weight":"700",
+      "text-anchor": dx>0.3?"start": dx<-0.3?"end":"middle"});
+    add(g,"circle",{cx:p[0],cy:p[1],r:24,fill:"transparent"});
+    bindTip(g,"Station "+k,[`${v.h} av ${v.n} plattor`,`${q}% träff`]);
+  });
+
+  // skalförklaring
+  const bx=cx-55, by=H-10;
+  (isDark()?SEQ_DARK:SEQ_LIGHT).forEach((c,i)=>
+    add(svg,"rect",{x:bx+i*22,y:by-8,width:20,height:8,rx:2,fill:c}));
+  txt(svg,bx-6,by,Math.round(lo)+"%",{"text-anchor":"end","font-size":"9"});
+  txt(svg,bx+(isDark()?SEQ_DARK:SEQ_LIGHT).length*22+4,by,Math.round(hi)+"%",
+    {"text-anchor":"start","font-size":"9"});
+  return svg;
+}
+/* Stationer som inte ligger på skeetbanan (Mitt, Bakom, trap 1–5, okänd) */
+function otherStationBars(byStation, onField){
+  const rest=Object.entries(byStation).filter(([k])=>!onField(k));
+  if(!rest.length) return null;
+  return hBars(rest.sort((a,b)=>(+a[0]||99)-(+b[0]||99))
+    .map(([k,v])=>[isNaN(+k)?k:"Station "+k, v]));
+}
+function stationBars(byStation){
+  return hBars(Object.entries(byStation).sort((a,b)=>(+a[0]||99)-(+b[0]||99))
+    .map(([k,v])=>[isNaN(+k)?k:"Station "+k, v]));
+}
+
+/* ---------- horisontella staplar (en serie) ---------- */
+function hBars(entries, opt){
+  opt=opt||{};
+  const rowH=34, padL=112, padR=46, W=340, H=entries.length*rowH+16;
+  const svg=svgEl(W,H);
+  const maxW=W-padL-padR;
+  [0,25,50,75,100].forEach(t=>{
+    const x=padL+maxW*t/100;
+    add(svg,"line",{x1:x,y1:6,x2:x,y2:H-14,class:"gridline",
+      "stroke-dasharray": t===0?"":"2 3"});
+    txt(svg,x,H-2,t+"%",{"text-anchor":"middle","font-size":"9"});
+  });
+  entries.forEach(([label,v],i)=>{
+    const y=10+i*rowH, q=pct(v.h,v.n), w=Math.max(3,maxW*q/100);
+    txt(svg,padL-8,y+16,label,{"text-anchor":"end",class:"lbl"});
+    const g=add(svg,"g",{});
+    add(g,"rect",{x:padL,y:y+4,width:w,height:18,rx:4,fill:"var(--s1)"});
+    txt(g,padL+w+7,y+18,q+"%",{class:"val","font-size":"12"});
+    add(g,"rect",{x:padL,y:y,width:maxW,height:rowH-4,fill:"transparent"});
+    bindTip(g,label,[`${v.h} av ${v.n}${opt.unit||" plattor"}`,`${q}%`]);
+  });
+  return svg;
+}
+
+/* ---------- trendlinje ---------- */
+function trendChart(scores){
+  const W=340,H=190, padL=30,padR=10,padT=10,padB=26;
+  const svg=svgEl(W,H);
+  const n=scores.length;
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const X=i=> n===1? padL+iw/2 : padL+iw*i/(n-1);
+  const Y=p=> padT+ih*(1-p/100);
+  [0,25,50,75,100].forEach(t=>{
+    add(svg,"line",{x1:padL,y1:Y(t),x2:W-padR,y2:Y(t),class:t===0?"baseline":"gridline"});
+    txt(svg,padL-6,Y(t)+4,t+"%",{"text-anchor":"end","font-size":"9"});
+  });
+  // rullande snitt (5)
+  const roll=scores.map((_,i)=>{
+    const w=scores.slice(Math.max(0,i-4),i+1);
+    return w.reduce((a,b)=>a+b.pct,0)/w.length;
+  });
+  add(svg,"path",{d:roll.map((p,i)=>(i?"L":"M")+X(i)+" "+Y(p)).join(" "),
+    fill:"none",stroke:"var(--s2)","stroke-width":"2","stroke-linejoin":"round","stroke-linecap":"round"});
+  // punkter
+  scores.forEach((s,i)=>{
+    const g=add(svg,"g",{});
+    add(g,"circle",{cx:X(i),cy:Y(s.pct),r:4.5,fill:"var(--s1)",
+      stroke:"var(--surface-1)","stroke-width":"2"});
+    add(g,"rect",{x:X(i)-9,y:padT,width:18,height:ih,fill:"transparent"});
+    bindTip(g, fmtDate(s.date), [DISCIPLINES[s.disc].name, `${s.hits}/${s.shots} · ${s.pct}%`]);
+  });
+  txt(svg,padL,H-6,fmtDate(scores[0].date),{"text-anchor":"start","font-size":"9"});
+  txt(svg,W-padR,H-6,fmtDate(scores[n-1].date),{"text-anchor":"end","font-size":"9"});
+  return svg;
+}
+
+/* ---------- svg-hjälpare ---------- */
+const NS="http://www.w3.org/2000/svg";
+function svgEl(w,h){ const s=document.createElementNS(NS,"svg");
+  s.setAttribute("viewBox",`0 0 ${w} ${h}`); s.setAttribute("class","chart");
+  s.setAttribute("role","img"); return s; }
+function add(p,tag,attrs){ const e=document.createElementNS(NS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]); p.appendChild(e); return e; }
+function txt(p,x,y,s,attrs){
+  const a=Object.assign({x,y},attrs||{});
+  // CSS-regeln svg.chart text{fill:…} slår presentationsattribut — sätt fill inline
+  if(a.fill){ a.style=(a.style||"")+";fill:"+a.fill; delete a.fill; }
+  const e=add(p,"text",a); e.textContent=s; return e; }
+
+/* ============================================================
+   INSTÄLLNINGAR
+   ============================================================ */
+function renderSettings(){
+  $("#sAskDir").value=String(DB.settings.askDir);
+  $("#sHaptic").value=String(DB.settings.haptic);
+  $("#sTheme").value=DB.settings.theme;
+  const ed=$("#seqEditor"); ed.innerHTML="";
+  Object.entries(DISCIPLINES).forEach(([id,d])=>{
+    const t=targetsFor(id);
+    const counts={};
+    t.forEach(x=>{const k=(x.st??"?")+"";counts[k]=(counts[k]||0)+1;});
+    const wrap=html(`<details class="disc"><summary>${esc(d.name)} — ${t.length} plattor</summary>
+      <p class="sub">${esc(d.note)}</p>
+      <textarea rows="6" style="font-family:ui-monospace,monospace;font-size:12px"></textarea>
+      <div class="row" style="gap:8px;margin-top:8px">
+        <button class="btn sm" data-act="save">Spara</button>
+        <button class="btn sm" data-act="reset">Återställ standard</button></div>
+      <p class="mut">Format: en rad per platta — <code>station,typ[,dubbelnr,skottnr]</code>.
+      Typ: hog, lag, torn, trap. Tom station = välj i appen.</p></details>`);
+    const ta=wrap.querySelector("textarea");
+    ta.value=t.map(x=>[x.st??"",x.t,x.pair??"",x.ord??""].join(",").replace(/,+$/,"")).join("\n");
+    wrap.querySelector('[data-act="save"]').onclick=()=>{
+      try{
+        const rows=ta.value.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+          const [st,ty,pair,ord]=l.split(",").map(s=>s.trim());
+          if(!["hog","lag","torn","trap"].includes(ty)) throw new Error("Okänd typ: "+ty);
+          return {st: st===""?null:(isNaN(+st)?st:+st), t:ty,
+            pair: pair?(+pair||pair):null, ord: ord?+ord:null};
+        });
+        if(!rows.length) throw new Error("Tom lista");
+        DB.seq[id]=rows; saveNow(); toast("Sparat — gäller nya serier"); renderSettings();
+      }catch(e){ alert("Fel i uppställningen: "+e.message); }
+    };
+    wrap.querySelector('[data-act="reset"]').onclick=()=>{
+      delete DB.seq[id]; saveNow(); renderSettings(); toast("Återställd");
+    };
+    ed.appendChild(wrap);
+  });
+}
+$("#sAskDir").onchange=e=>{DB.settings.askDir=+e.target.value; saveNow();};
+$("#sHaptic").onchange=e=>{DB.settings.haptic=+e.target.value; saveNow();};
+$("#sTheme").onchange=e=>{DB.settings.theme=e.target.value; applyTheme(); saveNow();};
+
+/* ---------- export / import ---------- */
+function download(name, text, mime){
+  const b=new Blob([text],{type:mime||"application/json"});
+  const u=URL.createObjectURL(b), a=document.createElement("a");
+  a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500);
+}
+$("#expJson").onclick=()=>{ saveNow();
+  download(`skyttelogg-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(DB,null,1));
+  toast("Exporterad"); };
+$("#expCsv").onclick=()=>{
+  const rows=[["pass_id","datum","disciplin","typ","bana","vapen","choke","patron","vader",
+    "serie_nr","platta_nr","station","plattyp","dubbel","skott_i_dubbel","resultat","skott_nr","missriktning","extra"]];
+  const push=s=>(s.series||[]).forEach((ser,si)=>ser.shots.forEach((sh,pi)=>rows.push([
+    s.id,s.date,DISCIPLINES[s.disc].name,s.kind,s.place,s.gun,s.choke,s.ammo,s.weather,
+    si+1,pi+1,sh.st??"",sh.t,sh.pair??"",sh.ord??"",sh.res==="hit"?"traff":"bom",
+    sh.shotNo??"",sh.dir??"",sh.extra?1:0])));
+  DB.sessions.forEach(push); if(DB.active) push(DB.active);
+  const csv=rows.map(r=>r.map(c=>{const v=String(c??"");
+    return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(";")).join("\n");
+  download(`skyttelogg-${new Date().toISOString().slice(0,10)}.csv`,"﻿"+csv,"text/csv");
+  toast("Exporterad");
+};
+$("#impFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.sessions) throw new Error("Filen ser inte ut som en skyttelogg");
+      const mode=confirm("OK = slå ihop med befintlig data.\nAvbryt = ersätt allt.");
+      if(mode){
+        const have=new Set(DB.sessions.map(s=>s.id));
+        d.sessions.forEach(s=>{ if(!have.has(s.id)) DB.sessions.push(s); });
+        DB.sessions.sort((a,b)=>a.date<b.date?1:-1);
+      }else{ DB=Object.assign(structuredClone(DEFAULTS),d); }
+      saveNow(); applyTheme(); toast("Importerad — "+DB.sessions.length+" pass"); renderSettings();
+    }catch(err){ alert("Kunde inte läsa filen: "+err.message); }
+    e.target.value="";
+  };
+  r.readAsText(f);
+};
+$("#wipeBtn").onclick=()=>{
+  if(!confirm("Radera ALL data i appen? Exportera först om du vill behålla den.")) return;
+  if(!confirm("Är du säker? Detta går inte att ångra.")) return;
+  DB=structuredClone(DEFAULTS); saveNow(); applyTheme(); toast("Allt raderat"); go("home");
+};
+
+/* ============================================================
+   START
+   ============================================================ */
+window.addEventListener("beforeunload", saveNow);
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) saveNow(); });
+renderHome();
+if(DB.active) go("home");
+
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
