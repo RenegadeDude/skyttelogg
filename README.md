@@ -1,8 +1,10 @@
 # Skyttelogg
 
-Offlinelogg för lerduveskytte — **nordisk skeet**, **hög fasan** och **trap**, registrerad
-platta för platta. Byggd som en PWA (webbapp som installeras på hemskärmen). All data ligger
-i telefonen, inget konto, ingen server, ingen täckning behövs.
+Offlinelogg för lerduveskytte — **nationell skeet**, **olympisk skeet**, **hög fasan** och
+**nordisk trap**. Byggd som en PWA (webbapp som installeras på hemskärmen). All data ligger i
+telefonen, inget konto, ingen server, ingen täckning behövs.
+
+Version 2.0 — bygger på specen *Prompt för skytteapp ver 2.2*, etapp 1.
 
 ## Filer
 
@@ -13,150 +15,129 @@ i telefonen, inget konto, ingen server, ingen täckning behövs.
 | `sw.js` | Service worker — cachar appen så den startar utan täckning |
 | `icon-*.png` | Ikoner för hemskärmen |
 
-## Så får du den i telefonen
+## Uppdatera appen på telefonen
 
-### Alternativ 1 — GitHub Pages (rekommenderas, ~10 min, gratis)
+1. Lägg de nya filerna i repomappen.
+2. GitHub Desktop → skriv en `Summary` → `Commit to main` → `Push origin`.
+3. **Höj `CACHE`-numret i `sw.js`** varje gång du ändrar `index.html`, annars fortsätter
+   telefonen visa den cachade gamla versionen. Just nu står det `skyttelogg-v2`.
+4. Öppna appen på telefonen med täckning. Den hämtar den nya versionen i bakgrunden och
+   visar den nästa gång du startar den. Vill du framtvinga det direkt: stäng appen helt
+   och öppna igen.
 
-Detta är det som ger en *riktig* installerbar offlineapp.
+Din registrerade data påverkas inte av en uppdatering. Den ligger i telefonens eget
+lagringsutrymme, inte i appfilen.
 
-1. Skapa ett nytt repo på github.com, t.ex. `skyttelogg`. Sätt det till **Public**
-   (Pages kräver det på gratiskontot).
-2. Ladda upp alla filer i den här mappen till repots rot (`Add file → Upload files`).
-3. `Settings → Pages → Build and deployment → Source: Deploy from a branch`,
-   välj `main` och `/ (root)`. Spara.
-4. Efter en minut ligger appen på `https://<ditt-användarnamn>.github.io/skyttelogg/`.
-5. Öppna den adressen i **Chrome på telefonen** → menyn (⋮) → **Lägg till på startskärmen**
-   / *Installera app*.
-6. Öppna appen en gång med täckning. Service workern cachar allt. Därefter fungerar den
-   utan nät — flygplansläge, ingen mast, spelar ingen roll.
+## Skjutordningar
 
-När du vill uppdatera appen: ladda upp en ny `index.html` till repot. Höj samtidigt
-`CACHE = "skyttelogg-v1"` i `sw.js` till `v2` — annars kan telefonen fortsätta visa
-den gamla versionen.
+Alla fyra grenarna summerar till exakt 25 skott.
 
-### Alternativ 2 — testa direkt utan att publicera
+| Gren | Duvor | Option | Totalt |
+|---|---|---|---|
+| Nationell skeet | 24 | 1 | 25 |
+| Olympisk skeet | 25 | 0 | 25 |
+| Hög fasan | 23 | 2 | 25 |
+| Nordisk trap | 25 | 0 | 25 |
 
-Lägg `index.html` i telefonen (t.ex. via OneDrive) och öppna den i Chrome. Appen fungerar,
-men service workern går inte att registrera från en lokal fil, så du får ingen
-hemskärmsikon och lagringen är mindre pålitlig. **Bra för att känna på flödet, inte för
-att lagra riktiga resultat.**
+**Nationell skeet** — station 1 och 2: torn, låda, dubblett torn/låda. Station 3, 4 och 5:
+torn, låda. Station 6 och 7: torn, låda, dubblett låda/torn. Station 8: torn, låda.
 
-### Alternativ 3 — riktig Android-app senare
+**Olympisk skeet** — station 1, 2 och 3: torn, dubblett torn/låda. Station 4: torn, låda.
+Station 5 och 6: låda, dubblett låda/torn. Station 7: dubblett låda/torn. Station 4 igen:
+dubblett torn/låda, dubblett låda/torn. Station 8: torn, låda.
 
-Om du vill ha den på Play Store eller nå kamera/sensorer kan samma HTML packas i en
-`WebView`/Capacitor-skal, eller skrivas om i Kotlin + Compose + Room. Datamodellen
-nedan är avsiktligt platt så den flyttar rakt in i en SQL-tabell.
+**Hög fasan** — station 1–7: torn, skottdubblett torn/låda. Station 8: torn, låda.
 
-## Vad appen gör
+**Nordisk trap** — 5 stationer × 5 duvor. Du väljer startstation och appen roterar åt höger,
+station 5 → station 1. En patron åt gången, alltså ett skott per duva.
 
-**Registrering i fält**
-- Två stora knappar (`Träff` / `Bom`) som täcker halva skärmen — går att träffa med
-  handskar utan att titta.
-- Appen vet var i serien du är: station och plattyp visas i stort ovanför knapparna.
-- Vid bom kan du snabbt ange var skottet gick (bakom / framför / över / under / vet ej).
-  Kan stängas av i inställningarna.
-- `+ Extra duva` för omskott (t.ex. första bommade duvan i serien som går om).
-- `↶ Ångra` tar bort senaste registreringen.
-- Pipraden längst upp visar hela serien i en blick — grönt, rött, tomt.
-- Trap: separata knappar för träff på första och andra skottet.
-- Hög fasan: stationsväljare som du kan flytta löpande under serien.
-- Vibration som kvittens (kan stängas av).
+Hela uppställningen finns att läsa i appen under `Mer → Om → Skjutordningar`.
 
-**Statistik**
-- Nyckeltal: träffprocent, snitt per serie med trend mot föregående fem, bästa serie,
-  längsta träffsvit.
-- **Träffprocent per station** ritad på en skeetbana. Färgskalan spänns över dina egna
-  ytterlägen, så skillnaden mellan 88 % och 96 % faktiskt syns. Stationer med under fem
-  registrerade plattor är grå istället för att låtsas vara statistik.
-- Träffprocent per plattyp: enkel hög, enkel låg, dubbel första skottet, dubbel andra
-  skottet, högtorn, trap. Det här är oftast den mest användbara vyn — andra skottet i
-  dubblén är nästan alltid svagast.
+## Option
+
+Option är en extra patron och redovisas alltid separat — den ersätter aldrig det första
+skottet i poängräkningen. En bom förblir en bom.
+
+- **Nationell skeet:** en patron. Erbjuds på första bommade duvan. Har du träffat allt skjuts
+  den på lådan från station 8.
+- **Hög fasan:** två patroner, aldrig fler. Erbjuds på de två första bommarna. Patroner som
+  är kvar när serien är slut skjuts på station 8 — låda först, sedan torn.
+- **Olympisk skeet och nordisk trap:** ingen option. Knappen visas inte.
+
+I protokollet efter varje serie har optionen en egen kolumn längst till höger, som i ett
+pappersprotokoll.
+
+## Två sätt att registrera
+
+Under `Mer → Registrering` väljer du hur skeetgrenarna ska rapporteras:
+
+**Per station** (standard) — du får hela stationens duvor på en skärm, markerar träff eller
+bom på var och en och bekräftar med en knapp. Tänkt för lagskytte, där du inte hinner peta
+på telefonen mellan skotten. Knappraden nere på skärmen är fast, så du behöver aldrig skrolla
+för att komma vidare.
+
+**Skott för skott** — en duva i taget med två stora knappar, som i version 1. Snabbare när du
+skjuter ensam.
+
+Nordisk trap rapporteras alltid skott för skott, enligt specen.
+
+Prova båda på banan. Det går att växla mitt i ett pass utan att data påverkas — det är bara
+presentationen som skiljer.
+
+## Registrering i övrigt
+
+- Vid bom anges var skottet gick i ett rutnät: bakom, före, över, under och kombinationerna,
+  samt Vet ej. När du valt fälls rutnätet ihop till en rad så stationen får plats på skärmen.
+- I nordisk trap kan du frivilligt registrera duvans bana i en matris med 15 rutor — höjd
+  (hög, mid, låg) mot sida (långt vänster till långt höger). `Hoppa över` med ett tryck.
+  Kan stängas av helt i inställningarna.
+- Pipraden överst visar hela serien i en blick. Runda pipor är optioner.
+- `↶` ångrar senaste registreringen, inklusive en option du ångrar dig om.
+
+## Pass och serier
+
+Ett pass innehåller en eller flera serier. Bana, väder, vapen, choke 1, choke 2, patron och
+övrigt anges en gång per pass och gäller alla serier i det. Byter du vapen eller patron mitt
+i, starta ett nytt pass.
+
+Alla dessa fält har vallistor som fylls på automatiskt med det du skriver, och som går att
+rensa under `Mer → Vallistor`.
+
+Ett avslutat pass går att rätta eller radera under `Historik → Redigera`. En serie du avbryter
+sparas som ofullständig — den räknas med i träffprocenten men inte i snitt per serie eller
+bästa serie.
+
+## Statistik
+
+- Träffprocent, snitt per serie med trend, bästa serie och längsta träffsvit.
+- Träffprocent per station ritad på en skeetbana sedd ovanifrån, med färgskalan spänd över
+  dina egna ytterlägen. Optionsskott räknas inte in där, eftersom alla slutoptioner landar på
+  station 8 och skulle snedvrida bilden.
+- Träffprocent per duvtyp: enkel torn, enkel låda, dubblett första och andra skottet,
+  skottdubblett första och andra skottet, trapduva och option.
 - Serieresultat över tid med rullande femserierssnitt.
-- Fördelning av bommar: bakom/framför/över/under.
-- Jämförelse per vapen, patron, choke, bana och väder — visas automatiskt så snart du har
-  minst tio plattor på vardera alternativ.
-- Alla filter går att kombinera med disciplin och tidsperiod.
-- Avbrutna serier räknas inte in i snitt och bästa serie.
+- Fördelning av bommar över de nio riktningarna.
+- Träffprocent per duvbana i trap, för de duvor där du registrerat banan.
+- Jämförelse per vapen, patron, choke 1, choke 2, bana och väder — visas så snart du har minst
+  tio skott på vardera alternativ.
 
-**Data**
-- Export till JSON (fullständig säkerhetskopia, kan importeras igen) och CSV (en rad per
-  platta — öppna i Excel om du vill räkna själv).
-- Import kan antingen slås ihop med befintlig data eller ersätta allt.
+Insikter i klartext (”mest miss: över och bakom på station 4”) ligger i etapp 2.
 
-## Kontrollera skjutordningen
+## Export
 
-Uppställningen för **nordisk skeet** i appen är:
+`Mer → Säkerhetskopia`. JSON är den fullständiga säkerhetskopian och kan läsas tillbaka in i
+appen, exempelvis vid telefonbyte. CSV har en rad per duva, inklusive optionsskott, missriktning
+och duvbana, avsedd att öppnas i Excel. Spara filerna där du vill, till exempel i OneDrive.
 
-| Station | Plattor |
-|---|---|
-| 1 | hög, låg, dubbel (hög → låg) |
-| 2 | hög, låg, dubbel (hög → låg) |
-| 3 | hög, låg |
-| 4 | hög, låg |
-| 5 | hög, låg |
-| 6 | hög, låg, dubbel (låg → hög) |
-| 7 | hög, låg, dubbel (låg → hög) |
-| 8 | hög, låg, **+ en hög som platta 25** |
+## Data från version 1
 
-De första 24 följer beskrivningen av nationell skeet (enkelduvor har ersatt de svårare
-dubbléerna jämfört med olympisk skeet). **Den 25:e plattan är min gissning** — vilken
-platta den är varierar mellan beskrivningar. Rätta den under
-`Mer → Serieuppställning → Nordisk skeet`; ändringen gäller nya serier och statistiken
-följer med automatiskt.
+Pass som registrerats i version 1 migreras automatiskt första gången du öppnar version 2:
+hög och låg blir torn och låda, disciplin-id:n uppdateras, gamla extraduvor blir optioner och
+choke hamnar i choke 1. Migreringen sker en gång och rör inte originalfilen på GitHub.
 
-Samma editor gäller alla discipliner. Formatet är en rad per platta:
+## Kvar till etapp 2
 
-```
-station,typ[,dubbelnummer,skottnummer]
-```
-
-Typ är `hog`, `lag`, `torn` eller `trap`. Tom station betyder "välj i appen" (som hög fasan).
-Plattor med samma dubbelnummer hör till samma dubblé, och skottnummer 1/2 säger vilket
-skott i dubblén det är — det är den kopplingen som gör att statistiken kan skilja på
-första och andra skottet.
-
-## Lägga till en disciplin
-
-I `index.html`, i `DISCIPLINES`-objektet:
-
-```js
-"sporting":{
-  name:"Sporting", short:"Sporting", field:"annat", perTarget:2,
-  stations:[1,2,3,4,5,6,7,8], pickStation:true,
-  build:()=>Array.from({length:50},()=>({st:null,t:"torn",pair:null,ord:null})),
-  note:"50 duvor, station väljs löpande."
-}
-```
-
-Statistiken, historiken och exporten plockar automatiskt upp den nya disciplinen.
-
-## Datamodell
-
-```
-DB
-├── settings   { askDir, haptic, theme }
-├── seq        { <disciplin-id>: [ … egen skjutordning … ] }
-├── active     pågående pass (samma form som ett pass nedan)
-└── sessions[] avslutade pass, senaste först
-    ├── id, date, disc, place, gun, choke, ammo, weather, kind, note
-    └── series[]
-        ├── id, curSt
-        ├── planned[]  { st, t, pair, ord, extra }
-        └── shots[]    { st, t, pair, ord, extra, res, shotNo, dir, ts }
-```
-
-`planned` och `shots` har samma index — `shots[i]` är resultatet på `planned[i]`. Det gör
-att du kan avbryta en serie var som helst och ändå veta exakt vilka plattor som är skjutna.
-
-## Idéer för nästa version
-
-- **Serier per pass som mål** — sätt ett mål (t.ex. "22/25") och se måluppfyllelse över tid.
-- **Kommentar per platta** istället för bara per pass — "släppte kinden", "sköt för tidigt".
-- **Foto av protokollet** som bilaga till passet.
-- **Medskyttar** och enkel resultattavla för klubbtävlingar.
-- **Träningsdagbok-vy** som blandar resultat med anteckningar kronologiskt.
-- **Import av gamla resultat** från kalkylblad via CSV-läsning (exporten visar formatet).
-- **Väder automatiskt** från position — men det kräver täckning, så det bör vara ett
-  frivilligt komplement som fylls i i efterhand.
-- **Bakåtjämförelse per station** — "station 7 har gått från 63 % till 78 % sedan mars".
-- **Widget/genväg** som startar ett nytt pass direkt från hemskärmen.
+- Engelsk språkversion. Alla texter i appen går redan genom en stränglista (`STRINGS` i
+  `index.html`) — engelska läggs till genom att fylla `STRINGS.en` med samma nycklar.
+  De engelska trap-termerna ska vara hard left, mid-left, straight away, mid-right, hard right.
+- Förfinad statistik med insikter i klartext.

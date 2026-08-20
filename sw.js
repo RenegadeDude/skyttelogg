@@ -1,5 +1,5 @@
 /* Skyttelogg service worker — gör appen körbar helt offline. */
-const CACHE = "skyttelogg-v1";
+const CACHE = "skyttelogg-v2";
 const ASSETS = [
   "./", "./index.html", "./manifest.json",
   "./icon-192.png", "./icon-512.png", "./icon-maskable.png"
